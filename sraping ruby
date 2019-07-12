@@ -1,0 +1,39 @@
+require "json"
+require "rubygems"
+require "selenium-webdriver"
+require "rspec/expectations"
+require 'csv'
+include RSpec::Matchers
+
+USERNAME_INPUT = {id: "campo_login"}
+USERPASSWORD_INPUT = {id: "campo_senha"}
+LOGIN_BTN = {name: "botao_login"}
+
+
+describe "Web Scraping" do
+  before(:each) do
+    Selenium::WebDriver::Chrome.driver_path = "/home/lucio/spec/chromedriver"
+    @driver = Selenium::WebDriver.for :chrome
+    @driver.manage.window.maximize
+    @driver.get "site_que_eu_quero_acessar"
+    @driver.find_element(USERNAME_INPUT).send_keys "meu_usuario"
+    @driver.find_element(USERPASSWORD_INPUT).send_keys "minha_senha"
+    @driver.find_element(LOGIN_BTN).click
+  end
+
+  after :each do
+    @driver.quit
+  end
+
+  it "WS" do
+    f = File.open("links.csv", "r")
+    f.each_line { |line|
+    	@driver.get line
+	titulo = (line.slice(line.length-4..line.length)).strip
+    	html = @driver.page_source()
+    	file = File.open(titulo.to_s+".html", "w")
+    	file.puts html
+    	file.close
+    	sleep 5}
+  end
+end
